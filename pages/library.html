@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Library | my book.</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="../Assets/css/library.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <a href="../landing_page.html" class="brand">my book<span>.</span></a>
+
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="library" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/></svg>
+          <span>My Library</span><em id="libraryCount">0</em>
+        </button>
+        <button class="nav-item" data-view="trash" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          <span>Trash</span><em id="trashCountSide">0</em>
+        </button>
+      </nav>
+    </div>
+
+    <blockquote class="quote">
+      <p>Fill your paper with the breathings of your heart.</p>
+      <cite>William Wordsworth</cite>
+    </blockquote>
+
+    <div class="user">
+      <div class="avatar" id="userAvatar">W</div>
+      <div>
+        <strong id="userName">Writer</strong>
+        <small>Student</small>
+      </div>
+      <button type="button" class="logout" id="logoutBtn" title="Log out" aria-label="Log out">&#8943;</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="content">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow" id="eyebrow">Your collection</p>
+        <h1 id="pageTitle">My Library</h1>
+      </div>
+      <button class="btn-dark-main" type="button" data-bs-toggle="modal" data-bs-target="#bookModal">+ New Book</button>
+    </header>
+
+    <div class="search">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4"/></svg>
+      <input type="search" id="searchInput" placeholder="Search your books..." aria-label="Search your books">
+      <kbd>Ctrl K</kbd>
+    </div>
+
+    <div class="section-head">
+      <h2><span id="sectionTitle">My Books</span> <small id="sectionCount">00</small></h2>
+      <select id="sortSelect" class="sort" aria-label="Sort books">
+        <option value="edited">Last edited</option>
+        <option value="title">Title A–Z</option>
+      </select>
+    </div>
+
+    <div class="book-grid" id="bookGrid"></div>
+    <p class="no-result d-none" id="noResult">No book matches your search.</p>
+
+    <button class="trash-bar" type="button" id="trashBar">
+      <span class="trash-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+      </span>
+      <span class="trash-text"><strong>Trash</strong><small>Restore books or delete them permanently</small></span>
+      <span class="trash-count" id="trashCountBar">0 books</span>
+      <span aria-hidden="true">&#8599;</span>
+    </button>
+  </main>
+</div>
+
+<!-- New book modal -->
+<div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" id="bookForm" novalidate>
+      <div class="modal-header">
+        <h5 class="modal-title">New book</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="bookTitle" class="form-label">Book title</label>
+        <input type="text" class="form-control" id="bookTitle" maxlength="40" required>
+        <div class="invalid-feedback">Give your book a title.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn-dark-main">Create book</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ---------- Storage (temporary: replaced by PHP + MySQL later) ----------
+const KEY = "mybookBooks";
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
+const save = () => localStorage.setItem(KEY, JSON.stringify(books));
+
+let books = load();          // starts empty: no books until the user adds one
+let view = "library";        // "library" or "trash"
+
+// ---------- Elements ----------
+const grid = document.getElementById("bookGrid");
+const searchInput = document.getElementById("searchInput");
+const sortSelect = document.getElementById("sortSelect");
+const noResult = document.getElementById("noResult");
+const bookForm = document.getElementById("bookForm");
+const bookTitle = document.getElementById("bookTitle");
+const modalEl = document.getElementById("bookModal");
+const modal = new bootstrap.Modal(modalEl);
+
+// ---------- Helpers ----------
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pad = (n) => String(n).padStart(2, "0");
+
+function timeAgo(ts) {
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d > 1 ? "s" : ""} ago`;
+}
+
+// ---------- Render ----------
+function render() {
+  const active = books.filter((b) => !b.trashed);
+  const trashed = books.filter((b) => b.trashed);
+  const inTrash = view === "trash";
+  const q = searchInput.value.trim().toLowerCase();
+
+  // counts + titles
+  document.getElementById("libraryCount").textContent = active.length;
+  document.getElementById("trashCountSide").textContent = trashed.length;
+  document.getElementById("trashCountBar").textContent = `${trashed.length} book${trashed.length === 1 ? "" : "s"}`;
+  document.getElementById("pageTitle").textContent = inTrash ? "Trash" : "My Library";
+  document.getElementById("eyebrow").textContent = inTrash ? "Deleted books" : "Your collection";
+  document.getElementById("sectionTitle").textContent = inTrash ? "Deleted" : "My Books";
+  document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+  document.getElementById("trashBar").classList.toggle("d-none", inTrash);
+
+  // filter + sort
+  let list = (inTrash ? trashed : active).filter((b) => b.title.toLowerCase().includes(q));
+  list.sort(sortSelect.value === "title" ? (a, b) => a.title.localeCompare(b.title) : (a, b) => b.edited - a.edited);
+  document.getElementById("sectionCount").textContent = pad(list.length);
+
+  // number on the cover = creation order
+  const order = [...active].sort((a, b) => a.created - b.created).map((b) => b.id);
+
+  grid.innerHTML = list.map((b) => `
+    <article class="book">
+      <button class="cover c${b.color}" type="button" data-open="${b.id}" ${inTrash ? "disabled" : ""}>
+        <span class="no">${pad(order.indexOf(b.id) + 1 || 0)}</span>
+        <span class="rule"></span>
+        <h3>${esc(b.title)}</h3>
+        <span class="tag">My book · Notes</span>
+      </button>
+      <p class="book-name">${esc(b.title)}</p>
+      <p class="book-meta">${b.pages} page${b.pages === 1 ? "" : "s"} · Edited ${timeAgo(b.edited)}</p>
+      <div class="book-actions">
+        ${inTrash
+          ? `<button class="link-btn" data-restore="${b.id}" type="button">Restore</button>
+             <button class="link-btn danger" data-delete="${b.id}" type="button">Delete forever</button>`
+          : `<button class="link-btn danger" data-trash="${b.id}" type="button">Move to trash</button>`}
+      </div>
+    </article>`).join("");
+
+  // "Add New Book" card: only in the library view
+  if (!inTrash && !q) {
+    grid.insertAdjacentHTML("beforeend", `
+      <div class="add-wrap">
+        <button class="add-card" type="button" data-bs-toggle="modal" data-bs-target="#bookModal">
+          <span class="plus">+</span>
+          <strong>Add New Book</strong>
+          <small>Start with a blank page</small>
+        </button>
+        <p class="book-name">A fresh beginning</p>
+        <p class="book-meta">Unlimited books</p>
+      </div>`);
+  }
+
+  const empty = list.length === 0 && (inTrash || q);
+  noResult.classList.toggle("d-none", !empty);
+  noResult.textContent = inTrash && !q ? "The trash is empty." : "No book matches your search.";
+}
+
+// ---------- Events ----------
+document.querySelectorAll(".nav-item").forEach((btn) =>
+  btn.addEventListener("click", () => { view = btn.dataset.view; searchInput.value = ""; render(); }));
+document.getElementById("trashBar").addEventListener("click", () => { view = "trash"; render(); });
+
+searchInput.addEventListener("input", render);
+sortSelect.addEventListener("change", render);
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); searchInput.focus(); }
+});
+
+// Create a book
+modalEl.addEventListener("shown.bs.modal", () => bookTitle.focus());
+modalEl.addEventListener("hidden.bs.modal", () => { bookForm.reset(); bookTitle.classList.remove("is-invalid"); });
+
+bookForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const title = bookTitle.value.trim();
+  if (!title) { bookTitle.classList.add("is-invalid"); return; }
+  const now = Date.now();
+  books.push({ id: String(now), title, color: books.length % 5, pages: 0, created: now, edited: now, trashed: false });
+  save();
+  modal.hide();
+  view = "library";
+  render();
+});
+
+// Actions on a book
+grid.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-open],[data-trash],[data-restore],[data-delete]");
+  if (!t) return;
+  const id = t.dataset.open || t.dataset.trash || t.dataset.restore || t.dataset.delete;
+  const book = books.find((b) => b.id === id);
+  if (!book) return;
+
+  if (t.dataset.open) {
+    // TODO: open the book editor page, for example: location.href = `editor.html?id=${id}`
+    return;
+  }
+  if (t.dataset.trash) book.trashed = true;
+  if (t.dataset.restore) book.trashed = false;
+  if (t.dataset.delete) {
+    if (!confirm(`Delete "${book.title}" permanently?`)) return;
+    books = books.filter((b) => b.id !== id);
+  }
+  save();
+  render();
+});
+
+// ---------- User (temporary until PHP sessions) ----------
+try {
+  const user = JSON.parse(localStorage.getItem("mybookUser"));
+  if (user && user.name) {
+    document.getElementById("userName").textContent = user.name;
+    document.getElementById("userAvatar").textContent =
+      user.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  }
+} catch {}
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  if (confirm("Log out of my book.?")) location.href = "login.html";
+});
+
+render();
+
+</script>
+</body>
+</html>
