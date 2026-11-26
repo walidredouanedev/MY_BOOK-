@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create your account | my book.</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="../Assets/css/signup.css" rel="stylesheet">
+</head>
+<body>
+
+  <main class="auth-wrap">
+    <a href="../landing_page.html" class="brand">my book.</a>
+
+    <section class="auth-card">
+      <h1>Create your account</h1>
+      <p class="auth-sub">Start writing your first book in minutes.</p>
+
+      <form id="signupForm" novalidate>
+
+        <div class="mb-3">
+          <label for="fullName" class="form-label">Full name</label>
+          <input type="text" class="form-control" id="fullName" name="fullName" autocomplete="name" required>
+          <div class="invalid-feedback">Enter your full name (at least 2 characters).</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" autocomplete="email" required>
+          <div class="invalid-feedback">Enter a valid email address, like name@example.com.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" required>
+            <button class="btn btn-toggle" type="button" id="togglePassword" aria-label="Show password">Show</button>
+            <div class="invalid-feedback">Your password does not meet all the rules below.</div>
+          </div>
+          <ul class="rules" id="passwordRules">
+            <li data-rule="length">At least 8 characters</li>
+            <li data-rule="upper">One uppercase letter</li>
+            <li data-rule="lower">One lowercase letter</li>
+            <li data-rule="number">One number</li>
+            <li data-rule="special">One special character</li>
+          </ul>
+        </div>
+
+        <div class="mb-3">
+          <label for="confirmPassword" class="form-label">Confirm password</label>
+          <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" autocomplete="new-password" required>
+          <div class="invalid-feedback">The two passwords do not match.</div>
+        </div>
+
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" id="terms" required>
+          <label class="form-check-label" for="terms">I agree to the terms of use</label>
+          <div class="invalid-feedback">You need to accept the terms to create an account.</div>
+        </div>
+
+        <button type="submit" class="btn btn-main w-100">Create account</button>
+
+        <div id="formSuccess" class="alert alert-success mt-3 d-none" role="status">
+          Account created. You can now log in.
+        </div>
+      </form>
+
+      <p class="switch-link">Already have an account? <a href="login.html">Log in</a></p>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("signupForm");
+const fullName = document.getElementById("fullName");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const confirmPassword = document.getElementById("confirmPassword");
+const terms = document.getElementById("terms");
+const togglePassword = document.getElementById("togglePassword");
+const success = document.getElementById("formSuccess");
+
+// Same password rules as the login page
+const rules = {
+  length: (v) => v.length >= 8,
+  upper: (v) => /[A-Z]/.test(v),
+  lower: (v) => /[a-z]/.test(v),
+  number: (v) => /\d/.test(v),
+  special: (v) => /[^A-Za-z0-9]/.test(v),
+};
+
+function setValid(input, isValid) {
+  input.classList.toggle("is-invalid", !isValid);
+  input.classList.toggle("is-valid", isValid);
+  return isValid;
+}
+
+function checkName() {
+  return setValid(fullName, fullName.value.trim().length >= 2);
+}
+
+function checkEmail() {
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  return setValid(email, pattern.test(email.value.trim()));
+}
+
+function updateRules() {
+  let allOk = true;
+  document.querySelectorAll("#passwordRules li").forEach((li) => {
+    const ok = rules[li.dataset.rule](password.value);
+    li.classList.toggle("valid", ok);
+    if (!ok) allOk = false;
+  });
+  return allOk;
+}
+
+function checkPassword() {
+  return setValid(password, updateRules());
+}
+
+function checkConfirm() {
+  const ok = confirmPassword.value !== "" && confirmPassword.value === password.value;
+  return setValid(confirmPassword, ok);
+}
+
+function checkTerms() {
+  terms.classList.toggle("is-invalid", !terms.checked);
+  return terms.checked;
+}
+
+// Live feedback
+fullName.addEventListener("blur", checkName);
+email.addEventListener("blur", checkEmail);
+password.addEventListener("input", () => {
+  checkPassword();
+  if (confirmPassword.value) checkConfirm();
+});
+confirmPassword.addEventListener("input", checkConfirm);
+terms.addEventListener("change", checkTerms);
+
+// Show / hide password
+togglePassword.addEventListener("click", () => {
+  const show = password.type === "password";
+  password.type = show ? "text" : "password";
+  confirmPassword.type = show ? "text" : "password";
+  togglePassword.textContent = show ? "Hide" : "Show";
+  togglePassword.setAttribute("aria-label", show ? "Hide password" : "Show password");
+});
+
+// Submit
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  success.classList.add("d-none");
+
+  const results = [checkName(), checkEmail(), checkPassword(), checkConfirm(), checkTerms()];
+  if (results.includes(false)) {
+    form.querySelector(".is-invalid")?.focus();
+    return;
+  }
+
+  // TODO (later): send the data to PHP, for example:
+  // fetch("../php/register.php", { method: "POST", body: new FormData(form) })
+  success.classList.remove("d-none");
+  form.reset();
+  document.querySelectorAll(".is-valid, .is-invalid").forEach((el) => el.classList.remove("is-valid", "is-invalid"));
+  updateRules();
+});
+  </script>
+</body>
+</html>
