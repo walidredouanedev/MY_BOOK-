@@ -112,7 +112,7 @@ const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; }
 const save = () => localStorage.setItem(KEY, JSON.stringify(books));
 
 let books = load();          // starts empty: no books until the user adds one
-let view = "library";        // "library" or "trash"
+let view = location.hash === "#trash" ? "trash" : "library";   // "library" or "trash"
 
 // ---------- Elements ----------
 const grid = document.getElementById("bookGrid");
@@ -236,7 +236,7 @@ grid.addEventListener("click", (e) => {
   if (!book) return;
 
   if (t.dataset.open) {
-    // TODO: open the book editor page, for example: location.href = `editor.html?id=${id}`
+    location.href = `book.html?id=${id}`;
     return;
   }
   if (t.dataset.trash) book.trashed = true;

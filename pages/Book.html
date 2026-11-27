@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Categories | my book.</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- library.css gives the shared sidebar, covers and buttons -->
+  <link href="../Assets/css/library.css" rel="stylesheet">
+  <link href="../Assets/css/book.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <a href="../landing_page.html" class="brand">my book<span>.</span></a>
+      <nav class="side-nav">
+        <a class="nav-item" href="../landing_page.html">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 11l8-7 8 7v9H4zM10 20v-6h4v6"/></svg>
+          <span>Home</span>
+        </a>
+        <a class="nav-item active" href="library.html">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6z"/></svg>
+          <span>My Library</span><em id="libraryCount">0</em>
+        </a>
+        <a class="nav-item" href="library.html#trash">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          <span>Trash</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="current">
+      <p class="label">Current book</p>
+      <div class="mini-cover c0" id="miniCover">
+        <span class="no" id="miniNo">01</span>
+        <span class="rule"></span>
+        <h3 id="miniTitle">Book</h3>
+        <span class="tag">My book · <span id="miniYear"></span></span>
+      </div>
+    </div>
+
+    <div class="user">
+      <div class="avatar" id="userAvatar">W</div>
+      <div><strong id="userName">Writer</strong><small>Student</small></div>
+      <button type="button" class="logout" id="logoutBtn" title="Log out" aria-label="Log out">&#8943;</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-col">
+    <header class="topbar">
+      <a href="library.html" class="back">&#8249; &nbsp;Back to Library</a>
+      <div class="topbar-right">
+        <span id="savedAt">Last saved just now</span>
+        <div class="avatar" id="topAvatar">W</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <nav class="crumbs"><a href="library.html">My Library</a> <span>/</span> <b id="crumbTitle">Book</b></nav>
+
+      <header class="page-head book-head">
+        <div>
+          <p class="eyebrow brown">Organize your knowledge</p>
+          <h1 id="bookTitle">Book</h1>
+          <p class="subtitle">Divide your book into categories, so every note has a thoughtful place to live.</p>
+        </div>
+        <button class="btn-dark-main btn-shadow" type="button" id="addCatBtn">+ &nbsp;Add Category</button>
+      </header>
+
+      <div class="section-head cat-head">
+        <h2>Categories <small id="catCount">00</small></h2>
+        <span class="hint">Open a category to start writing</span>
+      </div>
+
+      <div class="cat-grid" id="catGrid"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Add / edit category modal -->
+<div class="modal fade" id="catModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" id="catForm" novalidate>
+      <div class="modal-header">
+        <h5 class="modal-title" id="catModalTitle">New category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="catName" class="form-label">Name</label>
+          <input type="text" class="form-control" id="catName" maxlength="30" placeholder="PHP, MySQL, JavaScript..." required>
+          <div class="invalid-feedback">Give your category a name.</div>
+        </div>
+        <div class="mb-3">
+          <label for="catDesc" class="form-label">Short description <span class="text-muted">(optional)</span></label>
+          <input type="text" class="form-control" id="catDesc" maxlength="70">
+        </div>
+        <div>
+          <span class="form-label d-block">Color</span>
+          <div class="swatches" id="swatches">
+            <label class="swatch"><input type="radio" name="color" value="0" checked><span class="k0"></span></label>
+            <label class="swatch"><input type="radio" name="color" value="1"><span class="k1"></span></label>
+            <label class="swatch"><input type="radio" name="color" value="2"><span class="k2"></span></label>
+            <label class="swatch"><input type="radio" name="color" value="3"><span class="k3"></span></label>
+            <label class="swatch"><input type="radio" name="color" value="4"><span class="k4"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn-dark-main" id="catSubmit">Create category</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script >
+ // ---------- Data (temporary: localStorage, replaced by PHP + MySQL later) ----------
+const KEY = "mybookBooks";
+let books = [];
+try { books = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
+const save = () => localStorage.setItem(KEY, JSON.stringify(books));
+
+const bookId = new URLSearchParams(location.search).get("id");
+const book = books.find((b) => b.id === bookId && !b.trashed);
+if (!book) location.replace("library.html");   // unknown book -> back to the library
+book.categories = book.categories || [];       // a new book starts with no categories
+
+// ---------- Helpers ----------
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pad = (n) => String(n).padStart(2, "0");
+
+function timeAgo(ts) {
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hour${h > 1 ? "s" : ""} ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d > 1 ? "s" : ""} ago`;
+}
+
+const FOLDER = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`;
+
+// ---------- Render ----------
+function renderStatic() {
+  const active = books.filter((b) => !b.trashed);
+  const n = [...active].sort((a, b) => a.created - b.created).findIndex((b) => b.id === book.id) + 1;
+
+  document.title = `${book.title} | my book.`;
+  $("bookTitle").textContent = book.title;
+  $("crumbTitle").textContent = book.title;
+  $("libraryCount").textContent = active.length;
+  $("miniTitle").textContent = book.title;
+  $("miniNo").textContent = pad(n);
+  $("miniYear").textContent = new Date(book.created).getFullYear();
+  $("miniCover").className = `mini-cover c${book.color}`;
+  $("savedAt").textContent = `Last saved ${timeAgo(book.edited)}`;
+}
+
+function renderCategories() {
+  const cats = book.categories;
+  $("catCount").textContent = pad(cats.length);
+
+  $("catGrid").innerHTML = cats.map((c) => `
+    <article class="cat" data-open="${c.id}">
+      <div class="cat-top">
+        <span class="folder k${c.color}">${FOLDER}</span>
+        <div class="dropdown">
+          <button class="dots" type="button" data-bs-toggle="dropdown" aria-label="Category options">&bull;&bull;&bull;</button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><button class="dropdown-item" type="button" data-edit="${c.id}">Edit</button></li>
+            <li><button class="dropdown-item text-danger" type="button" data-del="${c.id}">Delete</button></li>
+          </ul>
+        </div>
+      </div>
+      <h3>${esc(c.name)}</h3>
+      <p>${esc(c.desc || "")}</p>
+      <div class="cat-foot"><span>${c.notes || 0} note${c.notes === 1 ? "" : "s"}</span><span>Open &rarr;</span></div>
+    </article>`).join("") + `
+    <button class="cat-add" type="button" id="addCard">
+      <span class="plus">+</span><strong>Add Category</strong><small>A new place for your notes</small>
+    </button>`;
+}
+
+// ---------- Add / edit modal ----------
+const modal = new bootstrap.Modal($("catModal"));
+let editingId = null;
+
+function openModal(cat) {
+  editingId = cat ? cat.id : null;
+  $("catModalTitle").textContent = cat ? "Edit category" : "New category";
+  $("catSubmit").textContent = cat ? "Save changes" : "Create category";
+  $("catName").value = cat ? cat.name : "";
+  $("catDesc").value = cat ? cat.desc || "" : "";
+  document.querySelector(`input[name="color"][value="${cat ? cat.color : book.categories.length % 5}"]`).checked = true;
+  $("catName").classList.remove("is-invalid");
+  modal.show();
+}
+
+$("catModal").addEventListener("shown.bs.modal", () => $("catName").focus());
+$("addCatBtn").addEventListener("click", () => openModal());
+
+$("catForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = $("catName").value.trim();
+  if (!name) { $("catName").classList.add("is-invalid"); return; }
+
+  const data = {
+    name,
+    desc: $("catDesc").value.trim(),
+    color: Number(document.querySelector('input[name="color"]:checked').value),
+  };
+
+  if (editingId) {
+    Object.assign(book.categories.find((c) => c.id === editingId), data);
+  } else {
+    book.categories.push({ id: String(Date.now()), notes: 0, ...data });
+  }
+  book.edited = Date.now();
+  save();
+  modal.hide();
+  renderStatic();
+  renderCategories();
+});
+
+// ---------- Card actions ----------
+$("catGrid").addEventListener("click", (e) => {
+  if (e.target.closest("#addCard")) return openModal();
+
+  const edit = e.target.closest("[data-edit]");
+  if (edit) return openModal(book.categories.find((c) => c.id === edit.dataset.edit));
+
+  const del = e.target.closest("[data-del]");
+  if (del) {
+    const cat = book.categories.find((c) => c.id === del.dataset.del);
+    if (confirm(`Delete the category "${cat.name}"?`)) {
+      book.categories = book.categories.filter((c) => c.id !== cat.id);
+      book.edited = Date.now();
+      save();
+      renderStatic();
+      renderCategories();
+    }
+    return;
+  }
+
+  if (e.target.closest(".dropdown")) return;
+  const card = e.target.closest("[data-open]");
+  if (card) {
+    // TODO: writing page, for example: location.href = `write.html?book=${book.id}&cat=${card.dataset.open}`
+  }
+});
+
+// ---------- User + logout (same as the library page) ----------
+try {
+  const user = JSON.parse(localStorage.getItem("mybookUser"));
+  if (user && user.name) {
+    const initials = user.name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+    $("userName").textContent = user.name;
+    $("userAvatar").textContent = initials;
+    $("topAvatar").textContent = initials;
+  }
+} catch {}
+
+$("logoutBtn").addEventListener("click", () => {
+  if (confirm("Log out of my book.?")) location.href = "login.html";
+});
+
+renderStatic();
+renderCategories();
+</script>
+</body>
+</html>
